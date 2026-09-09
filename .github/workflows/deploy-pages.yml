@@ -38,3 +38,16 @@ jobs:
     steps:
       - id: deployment
         uses: actions/deploy-pages@v4
+
+- uses: actions/setup-node@v4
+  with:
+    node-version: 22
+    cache: pnpm
+
+- run: pnpm install --frozen-lockfile
+- run: pnpm build
+- run: test -f dist/client/index.html
+
+- uses: actions/upload-pages-artifact@v3
+  with:
+    path: ./dist/client
