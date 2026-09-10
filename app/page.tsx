@@ -12,6 +12,8 @@ import {
 } from 'lucide-react';
 import MotionController from './motion-controller';
 
+export const dynamic = 'force-static';
+
 const services = [
   [
     '01',

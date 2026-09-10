@@ -8,21 +8,39 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
+      - name: Check out the site
+        uses: actions/checkout@v4
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
         with:
           version: 10.5.2
-      - uses: actions/setup-node@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: pnpm
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm build
-      - uses: actions/upload-pages-artifact@v3
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build the static site
+        run: pnpm build:pages
+
+      - name: Verify the site entry point
+        run: test -f dist/client/index.html
+
+      - name: Upload the Pages artifact
+        uses: actions/upload-pages-artifact@v3
         with:
           path: ./dist/client
 
@@ -36,27 +54,6 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - id: deployment
+      - name: Deploy to GitHub Pages
+        id: deployment
         uses: actions/deploy-pages@v4
-
-- uses: actions/setup-node@v4
-  with:
-    node-version: 24
-    cache: pnpm
-
-
-- run: pnpm install --frozen-lockfile
-- run: pnpm build
-- run: test -f dist/client/index.html
-
-- uses: actions/upload-pages-artifact@v3
-  with:
-    path: ./dist/client
-
-- run: pnpm install --frozen-lockfile
-- run: pnpm build
-- run: test -f dist/client/index.html
-
-- uses: actions/upload-pages-artifact@v3
-  with:
-    path: ./dist/client
